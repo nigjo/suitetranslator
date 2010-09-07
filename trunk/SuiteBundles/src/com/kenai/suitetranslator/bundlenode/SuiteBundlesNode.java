@@ -1,6 +1,5 @@
 package com.kenai.suitetranslator.bundlenode;
 
-import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,11 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.spi.project.SubprojectProvider;
+
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -21,12 +16,20 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.SubprojectProvider;
+
+import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
+
 /**
  * Hauptnode fuer den Eintrag "Text Resourcen" eines ModuleSuite Projektes.
  *
  * @todo Hier fehlt die Beschreibung der Klasse.
  *
- * @author hof
+ * @author nigjo
  */
 class SuiteBundlesNode extends AbstractNode
 {
