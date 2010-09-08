@@ -78,7 +78,8 @@ class SuiteBundlesNode extends AbstractNode
           return true;
 
         Project next = projects.next();
-        createProjectKeys(next, toPopulate);
+        if(!createProjectKeys(next, toPopulate))
+          return true;
 
         if(Thread.interrupted())
           return true;
@@ -110,26 +111,32 @@ class SuiteBundlesNode extends AbstractNode
       return new BundleGroupNode(key);
     }
 
-    private void createProjectKeys(
+    private boolean createProjectKeys(
         Project moduleProject, List<BundleGroup> toPopulate)
     {
       Sources sources = ProjectUtils.getSources(moduleProject);
       SourceGroup[] genericSources = sources.getSourceGroups("java");
       if(genericSources == null || genericSources.length == 0)
-        return;
+        return true;
       for(SourceGroup group : genericSources)
       {
         FileObject sourceRoot = group.getRootFolder();
         FileObject[] children = sourceRoot.getChildren();
         for(FileObject child : children)
         {
+          if(Thread.interrupted())
+            return false;
           if(child.isFolder())
-            scanForBundles(child, null, toPopulate);
+          {
+            if(!scanForBundles(child, null, toPopulate))
+              return false;
+          }
         }
       }
+      return true;
     }
 
-    private void scanForBundles(FileObject folder, String base,
+    private boolean scanForBundles(FileObject folder, String base,
         List<BundleGroup> toPopulate)
     {
       Map<String, BundleGroup> groups = new HashMap<String, BundleGroup>();
@@ -144,7 +151,7 @@ class SuiteBundlesNode extends AbstractNode
       for(FileObject child : children)
       {
         if(Thread.interrupted())
-          return;
+          return false;
         if(child.isFolder())
         {
           subdirs.add(child);
@@ -173,13 +180,19 @@ class SuiteBundlesNode extends AbstractNode
 
       // Unterverzeichnisse durchsuchen
       for(FileObject dir : subdirs)
-        scanForBundles(dir, base, toPopulate);
+      {
+        if(!scanForBundles(dir, base, toPopulate))
+          return false;
+      }
+
+      return true;
     }
 
     private void clearWaitNodes(List<BundleGroup> toPopulate)
     {
       Iterator<BundleGroup> it = toPopulate.iterator();
-      while(it.hasNext()){
+      while(it.hasNext())
+      {
         BundleGroup group = it.next();
         if(group.isDummyGroup())
           it.remove();
