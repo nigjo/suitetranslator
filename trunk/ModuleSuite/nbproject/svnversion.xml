@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="svnversion" default="svnversion" basedir="..">
+  <target name="-svnversion-init">
+    <!-- get svn binary file name -->
+    <condition property="svn.binary" value="svn.exe">
+      <os family="windows"/>
+    </condition>
+    <!--TODO: Please test this in a non windows environment -->
+    <property name="svn.binary" value="svn"/>
+
+    <!-- check for existance of binary -->
+    <condition property="svn.exist">
+      <and>
+        <!-- only if svn.binary is found in system search path -->
+        <available file="${svn.binary}" filepath="${java.library.path}"/>
+        <!-- only if module is already under svn control -->
+        <available file="${basedir}/.svn"/>
+        <!-- replacement can be disabled in modules project.properties -->
+        <not><istrue value="${svnversion.disable}"/></not>
+      </and>
+    </condition>
+  </target>
+
+  <target name="build-init" depends="-svnversion-init" if="svn.exist">
+    <!-- define svn macro -->
+    <macrodef name="svn">
+      <attribute name="command"/>
+      <attribute name="options" default=""/>
+      <attribute name="dir" default="${basedir}"/>
+      <attribute name="output" default=""/>
+      <sequential>
+        <exec executable="${svn.binary}" dir="@{dir}" output="@{output}">
+          <arg value="@{command}"/>
+          <arg line="@{options}"/>
+        </exec>
+      </sequential>
+    </macrodef>
+
+    <!-- redirect manifest file -->
+    <property name="manifest.mf" value="build/manifest-svn.mf"/>
+    <property name="manifest.source.mf" value="manifest.mf"/>
+
+    <!-- check module project settings -->
+    <property file="${manifest.source.mf}" prefix="svnmf"/>
+    <fail if="svnmf.OpenIDE-Module-Specification-Version"
+      message="Please enable 'Append Implementation Versions automaticaly'"/>
+
+    <!-- query svn info -->
+    <mkdir dir="build"/>
+    <svn command="info" options=". --xml" output="build/svninfo.xml"/>
+    <xmlproperty file="build/svninfo.xml" prefix="svninfo"
+      collapseattributes="true"/>
+
+    <!-- set "real" implementation version -->
+    <copy file="${manifest.source.mf}" tofile="${manifest.mf}"/>
+    <manifest file="${manifest.mf}" mode="update" >
+      <attribute name="OpenIDE-Module-Implementation-Version"
+        value="${svninfo.info.entry.commit.revision}"/>
+    </manifest>
+  </target>
+
+</project>
