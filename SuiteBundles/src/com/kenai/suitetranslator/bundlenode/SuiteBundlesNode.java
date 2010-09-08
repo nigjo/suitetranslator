@@ -8,19 +8,25 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.awt.Image;
+
+import javax.swing.Icon;
+import javax.swing.UIManager;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.SubprojectProvider;
+
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
 
@@ -33,6 +39,8 @@ import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
  */
 class SuiteBundlesNode extends AbstractNode
 {
+  public static final String DEFAULT_NETBEANS_FOLDER = "org/openide/loaders/defaultFolder.gif";
+  public static final String PROPERTY_ICON_BADGE = "com/kenai/suitetranslator/bundlenode/BundlesBadge.png";
   private final Project p;
 
   public SuiteBundlesNode(Project p)
@@ -40,8 +48,48 @@ class SuiteBundlesNode extends AbstractNode
     super(Children.create(new BundleSearcher(p), true), p.getLookup());
     this.p = p;
     setName(getClass().getName());
+    setIconBaseWithExtension(DEFAULT_NETBEANS_FOLDER);
   }
 
+  // <editor-fold defaultstate="collapsed" desc="Filter: Icon">
+  @Override
+  public Image getIcon(int type)
+  {
+    Image icon;
+
+    Object nbFolder = UIManager.get("Nb.Explorer.Folder.icon");
+    if(nbFolder == null)
+      nbFolder = super.getIcon(type);
+    if(nbFolder instanceof Image)
+      icon = (Image)nbFolder;
+    else if(nbFolder instanceof Icon)
+      icon = ImageUtilities.icon2Image((Icon)nbFolder);
+    else
+      icon = super.getIcon(type);
+    Image badge = ImageUtilities.loadImage(PROPERTY_ICON_BADGE);
+    return ImageUtilities.mergeImages(icon, badge, 9, 8);
+  }
+
+  @Override
+  public Image getOpenedIcon(int type)
+  {
+    Image icon;
+
+    Object nbFolder = UIManager.get("Nb.Explorer.Folder.openedIcon");
+    if(nbFolder == null)
+      nbFolder = super.getOpenedIcon(type);
+    if(nbFolder instanceof Image)
+      icon = (Image)nbFolder;
+    else if(nbFolder instanceof Icon)
+      icon = ImageUtilities.icon2Image((Icon)nbFolder);
+    else
+      icon = super.getOpenedIcon(type);
+    Image badge = ImageUtilities.loadImage(PROPERTY_ICON_BADGE);
+    return ImageUtilities.mergeImages(icon, badge, 9, 8);
+  }
+  // </editor-fold>
+
+  // <editor-fold defaultstate="collapsed" desc="Filter: displayName">
   @Override
   public String getDisplayName()
   {
@@ -54,7 +102,9 @@ class SuiteBundlesNode extends AbstractNode
       return super.getDisplayName();
     }
   }
+  // </editor-fold>
 
+  // <editor-fold defaultstate="collapsed" desc="Child factory">
   private static class BundleSearcher extends ChildFactory<BundleGroup>
   {
     private final Project p;
@@ -200,4 +250,5 @@ class SuiteBundlesNode extends AbstractNode
     }
 
   }
+  // </editor-fold>
 }
