@@ -84,7 +84,10 @@ class BundleGroupNode extends FilterNode
         }
         Locale locale = file.getLocale();
         if(locale == null)
-          locales.append("<Standard>");
+        {
+          locales.append(NbBundle.getMessage(
+              BundleGroupNode.class, "BundleGroupNode.default_locale"));
+        }
         else
           locales.append(locale.getDisplayName());
       }
@@ -176,4 +179,5 @@ class BundleGroupNode extends FilterNode
       return null;
     }
   }
+
 }
