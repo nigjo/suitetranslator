@@ -1,5 +1,7 @@
 package com.kenai.suitetranslator.bundlenode;
 
+import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -21,13 +23,17 @@ import org.netbeans.api.project.ProjectUtils;
 
 import com.kenai.suitetranslator.bundlenode.data.BundleFile;
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Neue Klasse erstellt von hof. Erstellt am Sep 7, 2010, 11:29:33 AM.
+ * A Node for a BundleGroup.
  *
  * @todo Hier fehlt die Beschreibung der Klasse.
  *
- * @author hof
+ * @see BundleGroup
+ * @author nigjo
  */
 class BundleGroupNode extends FilterNode
 {
@@ -48,8 +54,10 @@ class BundleGroupNode extends FilterNode
     super(original, Children.LEAF,
         new ProxyLookup(original.getLookup(), Lookups.fixed(key)));
     this.bundleGroup = key;
+    initChangeEvents(this.bundleGroup);
   }
 
+  // <editor-fold defaultstate="collapsed" desc="shortDescription">
   @Override
   public String getShortDescription()
   {
@@ -125,7 +133,7 @@ class BundleGroupNode extends FilterNode
       htmlText = "<span style='color:black'>" + htmlText + "</span>";
 
     return htmlText;
-  }
+  }// </editor-fold>
 
   @Override
   public String getDisplayName()
@@ -133,28 +141,6 @@ class BundleGroupNode extends FilterNode
     if(bundleGroup == null)
       return super.getDisplayName();
     String basename = bundleGroup.getBasename();
-//    //WZLGT:start
-//    if(basename.startsWith(WZLGT_PREFIX))
-//    {
-//      String prefix = "<wzlgt>";
-//      int needleLength = WZLGT_PREFIX.length();
-//      if(basename.substring(WZLGT_PREFIX.length()).startsWith(APP_PREFIX))
-//      {
-//        needleLength += APP_PREFIX.length();
-//        int endIndex = basename.indexOf('.', needleLength);
-//        String needle = basename.substring(needleLength, endIndex);
-//        prefix = '<' + needle + '>';
-//        needleLength += needle.length();
-//      }
-//      else if(basename.substring(WZLGT_PREFIX.length()).
-//          startsWith(PLATFORM_PREFIX))
-//      {
-//        needleLength += PLATFORM_PREFIX.length() - 1;
-//        prefix = "<platform>";
-//      }
-//      basename = prefix + basename.substring(needleLength);
-//    }
-//    //WZLGT:end
     return basename;
   }
 
@@ -179,5 +165,87 @@ class BundleGroupNode extends FilterNode
       return null;
     }
   }
+
+  private void changedLocaleCount(int oldCount, int newCount)
+  {
+    setShortDescription(getShortDescription());
+  }
+
+  private void changesBundleDir(FileObject oldFolder, FileObject newFolder)
+  {
+  }
+
+  private void changesBundleData(long oldTime, long newTime)
+  {
+  }
+
+  // <editor-fold defaultstate="collapsed" desc="PropertyChangeListener">
+  private Map<String, PropertyChangeListener> groupListener;
+
+  private void initChangeEvents(BundleGroup group)
+  {
+    groupListener = new HashMap<String, PropertyChangeListener>();
+
+    groupListener.put(BundleGroup.PROP_LOCALE_COUNT,
+        new PropertyChangeListener()
+        {
+          @Override
+          public void propertyChange(PropertyChangeEvent evt)
+          {
+            changedLocaleCount(
+                (Integer)evt.getOldValue(),
+                (Integer)evt.getNewValue());
+          }
+
+        });
+
+    groupListener.put(BundleGroup.PROP_BUNDLE_DIR,
+        new PropertyChangeListener()
+        {
+          @Override
+          public void propertyChange(PropertyChangeEvent evt)
+          {
+            changesBundleDir(
+                (FileObject)evt.getOldValue(),
+                (FileObject)evt.getNewValue());
+          }
+
+        });
+    groupListener.put(BundleGroup.PROP_LAST_CHANGED,
+        new PropertyChangeListener()
+        {
+          @Override
+          public void propertyChange(PropertyChangeEvent evt)
+          {
+            changesBundleData(
+                (Long)evt.getOldValue(),
+                (Long)evt.getNewValue());
+          }
+
+        });
+
+    for(String name : groupListener.keySet())
+    {
+      PropertyChangeListener listener = groupListener.get(name);
+      bundleGroup.addPropertyChangeListener(name, listener);
+    }
+  }
+
+  @Override
+  public void destroy() throws IOException
+  {
+    // listener loechen
+    if(groupListener != null)
+    {
+
+      for(String name : groupListener.keySet())
+      {
+        PropertyChangeListener listener = groupListener.get(name);
+        bundleGroup.removePropertyChangeListener(name, listener);
+      }
+    }
+
+    super.destroy();
+  }// </editor-fold>
 
 }
