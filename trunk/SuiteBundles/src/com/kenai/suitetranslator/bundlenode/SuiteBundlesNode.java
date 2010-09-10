@@ -1,6 +1,7 @@
 package com.kenai.suitetranslator.bundlenode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -144,6 +145,8 @@ class SuiteBundlesNode extends AbstractNode
         if(Thread.interrupted())
           return true;
 
+        sort(toPopulate);
+
         // Die Bundles Projektweise anzeigen
         toPopulate.add(BundleGroup.createDummyGroup());
         return false;
@@ -249,6 +252,11 @@ class SuiteBundlesNode extends AbstractNode
         if(group.isDummyGroup())
           it.remove();
       }
+    }
+
+    private void sort(List<BundleGroup> toPopulate)
+    {
+      Collections.sort(toPopulate);
     }
 
   }

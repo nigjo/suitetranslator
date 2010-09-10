@@ -1,16 +1,18 @@
 package com.kenai.suitetranslator.bundlenode;
 
-import com.kenai.suitetranslator.bundlenode.data.BundleFile;
-import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Locale;
 import java.util.Set;
+
+import java.awt.Image;
+
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+
+import com.kenai.suitetranslator.bundlenode.data.BundleFile;
+import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
 
 /**
  * FilterNode to add a info badge to BundleGroupNodes.
@@ -45,7 +47,7 @@ class BadgedGroupNode extends FilterNode
 
     Image badge = ImageUtilities.loadImage(badgeResource);
 
-    String tooltip = NbBundle.getMessage(BadgedGroupNode.class, GRAY);
+    String tooltip = NbBundle.getMessage(BadgedGroupNode.class, badgeResource);
     badge = ImageUtilities.assignToolTipToImage(badge,
         "<em>" + tooltip + "</em>");
 

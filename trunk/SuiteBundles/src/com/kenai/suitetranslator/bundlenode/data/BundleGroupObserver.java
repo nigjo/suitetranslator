@@ -3,10 +3,7 @@ package com.kenai.suitetranslator.bundlenode.data;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -121,24 +118,9 @@ class BundleGroupObserver extends FileChangeAdapter
   }
 
   @Override
-  public void fileAttributeChanged(FileAttributeEvent fe)
-  {
-    if(fe.getName().equals("DataEditorSupport.read-only.refresh"))
-      return;
-    Logger.getLogger(BundleGroupObserver.class.getName()).log(
-        Level.INFO, "changed attribute {0} of file {1}.",
-        new Object[]
-        {
-          fe.getName(), fe.getFile()
-        });
-  }
-
-  @Override
   public void fileChanged(FileEvent fe)
   {
     group.setLastChange(fe.getTime());
-    Logger.getLogger(BundleGroupObserver.class.getName()).log(
-        Level.INFO, "changed file {0}.", fe.getFile());
   }
   // </editor-fold>
 

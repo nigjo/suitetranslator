@@ -2,13 +2,15 @@ package com.kenai.suitetranslator.bundlenode.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.openide.filesystems.FileObject;
-import org.openide.util.EditableProperties;
 
 /**
  * Eine einzelne Propierties Datei als Teil eines Bundle;
@@ -20,9 +22,8 @@ public class BundleFile
   private final FileObject file;
   private final BundleGroup parent;
   private final Locale locale;
-  private EditableProperties data;
+  private SoftReference<Properties> dataRef;
   private Date lastModified;
-  //private IOException lastException;
 
   BundleFile(BundleGroup bundle, Locale locale) throws IOException
   {
@@ -42,9 +43,6 @@ public class BundleFile
       fo = bundleDir.createData(bundleFileName, "properties");
     this.file = fo;
     this.lastModified = this.file.lastModified();
-    // Die "Datei" existiert nicht und wueder nur Fehlermeldungen
-    // "produzieren", deswegen hier die Datenstrukturen anlegen.
-    //this.dataObject = DataObject.find(fo);
   }
 
   BundleFile(BundleGroup bundle, FileObject subfile)
@@ -91,60 +89,35 @@ public class BundleFile
     return parent;
   }
 
-  // <editor-fold defaultstate="collapsed" desc="readfile">
-//  private synchronized EditableProperties readFile()
-//  {
-//    try
-//    {
-//      return readFileImpl();
-//    }
-//    catch(IOException ioe)
-//    {
-//      lastException = ioe;
-//      return null;
-//    }
-//  }
-//
-//  private EditableProperties readFileImpl() throws IOException
-//  {
-//    InputStream in = file.getInputStream();
-//    try
-//    {
-//      EditableProperties p = new EditableProperties(true);
-//      p.load(in);
-//      return p;
-//    }
-//    finally
-//    {
-//      in.close();
-//    }
-//  }
-  // </editor-fold>
   public Set<String> getKeys()
   {
-    return getData().keySet();
+    return getData().stringPropertyNames();
   }
 
-  private synchronized EditableProperties getData()
+  private synchronized Properties getData()
   {
+    Properties data = null;
     Date now = file.lastModified();
-    if(data == null || now.after(lastModified))
+    if(dataRef == null || dataRef.get() == null || now.after(lastModified))
     {
-      updateProperties();
+      data = updateProperties();
+      dataRef = new SoftReference<Properties>(data);
       lastModified = now;
     }
-    return data;
+    return dataRef.get();
   }
 
-  protected void updateProperties()
+  protected Properties updateProperties()
   {
     try
     {
+      file.refresh();
       InputStream in = file.getInputStream();
       try
       {
-        data = new EditableProperties(true);
+        Properties data = new Properties();
         data.load(in);
+        return data;
       }
       finally
       {
@@ -155,6 +128,7 @@ public class BundleFile
     {
       Logger.getLogger(BundleFile.class.getName()).
           log(Level.FINE, e.toString(), e);
+      return null;
     }
   }
 
