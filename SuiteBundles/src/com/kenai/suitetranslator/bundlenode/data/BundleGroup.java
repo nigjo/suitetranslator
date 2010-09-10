@@ -17,7 +17,8 @@ import org.openide.nodes.Node;
  *
  * @author nigjo
  */
-public class BundleGroup implements Iterable<BundleFile>
+public class BundleGroup implements Iterable<BundleFile>,
+    Comparable<BundleGroup>
 {
   public static final String PROP_BUNDLE_DIR = "BundleGroup.bundleDir";
   public static final String PROP_LOCALE_COUNT = "BundleGroup.localeCount";
@@ -68,6 +69,12 @@ public class BundleGroup implements Iterable<BundleFile>
   public Iterator<BundleFile> iterator()
   {
     return files.iterator();
+  }
+
+  @Override
+  public int compareTo(BundleGroup o)
+  {
+    return toString().compareTo(o.toString());
   }
 
   @Override
