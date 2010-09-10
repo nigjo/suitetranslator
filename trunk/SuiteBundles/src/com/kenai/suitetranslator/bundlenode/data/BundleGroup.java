@@ -1,5 +1,6 @@
 package com.kenai.suitetranslator.bundlenode.data;
 
+import com.kenai.suitetranslator.bundlenode.BundleGroupNode;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  * Daten eines Bundles.
@@ -20,6 +22,7 @@ public class BundleGroup implements Iterable<BundleFile>
   public static final String PROP_BUNDLE_DIR = "BundleGroup.bundleDir";
   public static final String PROP_LOCALE_COUNT = "BundleGroup.localeCount";
   public static final String PROP_LAST_CHANGED = "BundleGroup.lastChanged";
+  protected BundleGroupNode node;
   List<BundleFile> files;
   private final String basename;
   private BundleGroupObserver changeObserver;
@@ -159,6 +162,13 @@ public class BundleGroup implements Iterable<BundleFile>
       return;
     this.lastChanged = time;
     changeObserver.bundleChanged(lastChange, time);
+  }
+
+  public Node getNodeDelegate()
+  {
+    if(node == null)
+      node = new BundleGroupNode(this);
+    return node;
   }
 
   private static class DummyBundleGroup extends BundleGroup

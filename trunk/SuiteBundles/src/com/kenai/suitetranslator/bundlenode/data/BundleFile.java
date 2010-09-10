@@ -2,8 +2,11 @@ package com.kenai.suitetranslator.bundlenode.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.EditableProperties;
 
@@ -18,8 +21,8 @@ public class BundleFile
   private final BundleGroup parent;
   private final Locale locale;
   private EditableProperties data;
-
-
+  private Date lastModified;
+  //private IOException lastException;
 
   BundleFile(BundleGroup bundle, Locale locale) throws IOException
   {
@@ -34,19 +37,21 @@ public class BundleFile
     bundleFileName =
         bundleFileName.substring(bundleFileName.lastIndexOf('.') + 1);
     bundleFileName += '_' + locale.toString();
-    this.file = bundleDir.getFileObject(bundleFileName, "properties");
-
+    FileObject fo = bundleDir.getFileObject(bundleFileName, "properties");
+    if(fo == null)
+      fo = bundleDir.createData(bundleFileName, "properties");
+    this.file = fo;
+    this.lastModified = this.file.lastModified();
     // Die "Datei" existiert nicht und wueder nur Fehlermeldungen
     // "produzieren", deswegen hier die Datenstrukturen anlegen.
-//    this.entries = new HashMap<String, BundleEntry>();
-//    this.keyOrder = new ArrayList<String>();
-    this.data = new EditableProperties(true);
+    //this.dataObject = DataObject.find(fo);
   }
 
   BundleFile(BundleGroup bundle, FileObject subfile)
   {
     this.parent = bundle;
     this.file = subfile;
+    this.lastModified = this.file.lastModified();
 
     String base = bundle.getBasename();
     base = base.substring(base.lastIndexOf('.') + 1);
@@ -81,92 +86,86 @@ public class BundleFile
     return locale;
   }
 
+  public BundleGroup getParent()
+  {
+    return parent;
+  }
+
   // <editor-fold defaultstate="collapsed" desc="readfile">
-  private synchronized void readFile()
-  {
-    try
-    {
-      readFileImpl();
-    }
-    catch(IOException ioe)
-    {
-    }
-  }
-
-  private void readFileImpl() throws IOException
-  {
-    InputStream in = file.getInputStream();
-    try
-    {
-      EditableProperties p = new EditableProperties(true);
-      p.load(in);
-    }
-    finally
-    {
-      in.close();
-    }
-  }
+//  private synchronized EditableProperties readFile()
+//  {
+//    try
+//    {
+//      return readFileImpl();
+//    }
+//    catch(IOException ioe)
+//    {
+//      lastException = ioe;
+//      return null;
+//    }
+//  }
+//
+//  private EditableProperties readFileImpl() throws IOException
+//  {
+//    InputStream in = file.getInputStream();
+//    try
+//    {
+//      EditableProperties p = new EditableProperties(true);
+//      p.load(in);
+//      return p;
+//    }
+//    finally
+//    {
+//      in.close();
+//    }
+//  }
   // </editor-fold>
-
   public Set<String> getKeys()
   {
-    if(data == null)
-      readFile();
-    return data.keySet();
+    return getData().keySet();
+  }
+
+  private synchronized EditableProperties getData()
+  {
+    Date now = file.lastModified();
+    if(data == null || now.after(lastModified))
+    {
+      updateProperties();
+      lastModified = now;
+    }
+    return data;
+  }
+
+  protected void updateProperties()
+  {
+    try
+    {
+      InputStream in = file.getInputStream();
+      try
+      {
+        data = new EditableProperties(true);
+        data.load(in);
+      }
+      finally
+      {
+        in.close();
+      }
+    }
+    catch(IOException e)
+    {
+      Logger.getLogger(BundleFile.class.getName()).
+          log(Level.FINE, e.toString(), e);
+    }
   }
 
   public String getValue(String key)
   {
-    if(data == null)
-      readFile();
-    return data.getProperty(key);
+    return getData().getProperty(key);
   }
 
   public void setValue(String key, String value)
   {
-    data.setProperty(key, value);
-  }
-
-  public static String stripPropertyExtras(String lines)
-  {
-    if(lines == null)
-      return null;
-    String singleLine = lines.trim();
-    singleLine = singleLine.replaceAll("\\\\\n\\s*", "");
-    int index;
-    while(-1 < (index = singleLine.indexOf('\\')))
-    {
-      if(singleLine.length() <= index + 1)
-        break;
-      switch(singleLine.charAt(index + 1))
-      {
-        case 'u':
-          String code = singleLine.substring(index + 2, index + 6);
-          char c = (char)Integer.parseInt(code, 16);
-          singleLine = singleLine.substring(0, index)
-              + c + singleLine.substring(index + 6);
-          index++;
-          break;
-        case 't':
-          singleLine = singleLine.substring(0, index)
-              + '\t' + singleLine.substring(index + 2);
-          break;
-        case 'r':
-          singleLine = singleLine.substring(0, index)
-              + '\r' + singleLine.substring(index + 2);
-          break;
-        case 'n':
-          singleLine = singleLine.substring(0, index)
-              + '\n' + singleLine.substring(index + 2);
-          break;
-        default:
-          // delete escape
-          singleLine = singleLine.substring(0, index)
-              + singleLine.substring(index + 1);
-          break;
-      }
-    }
-    return singleLine;
+    getData().setProperty(key, value);
   }
 
   public FileObject getFile()

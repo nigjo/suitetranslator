@@ -116,6 +116,16 @@ class SuiteBundlesNode extends AbstractNode
     }
 
     @Override
+    protected Node createNodeForKey(BundleGroup key)
+    {
+      if(key.isDummyGroup())
+        return createWaitNode();
+      Node bundleGroupNode = key.getNodeDelegate();
+      bundleGroupNode = new BadgedGroupNode(bundleGroupNode);
+      return bundleGroupNode;
+    }
+
+    @Override
     protected boolean createKeys(List<BundleGroup> toPopulate)
     {
       Iterator<? extends Project> projects = getSubProjects();
@@ -151,14 +161,6 @@ class SuiteBundlesNode extends AbstractNode
         subProjects = projects.iterator();
       }
       return subProjects;
-    }
-
-    @Override
-    protected Node createNodeForKey(BundleGroup key)
-    {
-      if(key.isDummyGroup())
-        return createWaitNode();
-      return new BundleGroupNode(key);
     }
 
     private boolean createProjectKeys(
