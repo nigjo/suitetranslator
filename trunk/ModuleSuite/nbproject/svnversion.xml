@@ -12,7 +12,10 @@
     <condition property="svn.exist">
       <and>
         <!-- only if svn.binary is found in system search path -->
-        <available file="${svn.binary}" filepath="${java.library.path}"/>
+        <or>
+          <available file="${svn.binary}" filepath="${java.library.path}"/>
+          <available file="${svn.binary}"/>
+        </or>
         <!-- only if module is already under svn control -->
         <available file="${basedir}/.svn"/>
         <!-- replacement can be disabled in modules project.properties -->
