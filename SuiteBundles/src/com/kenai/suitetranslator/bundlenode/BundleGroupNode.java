@@ -35,7 +35,7 @@ import java.util.Map;
  * @see BundleGroup
  * @author nigjo
  */
-class BundleGroupNode extends FilterNode
+public class BundleGroupNode extends FilterNode
 {
   private final BundleGroup bundleGroup;
 
@@ -169,14 +169,17 @@ class BundleGroupNode extends FilterNode
   private void changedLocaleCount(int oldCount, int newCount)
   {
     setShortDescription(getShortDescription());
+    firePropertyChange("BundleGroupNode.localeCount", oldCount, newCount);
   }
 
   private void changesBundleDir(FileObject oldFolder, FileObject newFolder)
   {
+    firePropertyChange("BundleGroupNode.bundleDir", oldFolder, newFolder);
   }
 
   private void changesBundleData(long oldTime, long newTime)
   {
+    firePropertyChange("BundleGroupNode.lastModified", oldTime, newTime);
   }
 
   // <editor-fold defaultstate="collapsed" desc="PropertyChangeListener">

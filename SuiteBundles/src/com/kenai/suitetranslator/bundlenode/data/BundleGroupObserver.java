@@ -65,7 +65,7 @@ class BundleGroupObserver extends FileChangeAdapter
   void bundleChanged(long lastChange, long time)
   {
     changeSupport.firePropertyChange(
-        BundleGroup.PROP_LOCALE_COUNT, lastChange, time);
+        BundleGroup.PROP_LAST_CHANGED, lastChange, time);
   }
 
   // <editor-fold defaultstate="collapsed" desc="external file events">
