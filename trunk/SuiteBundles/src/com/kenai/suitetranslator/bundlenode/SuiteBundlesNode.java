@@ -2,12 +2,15 @@ package com.kenai.suitetranslator.bundlenode;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import java.awt.Image;
 
@@ -139,6 +142,9 @@ class SuiteBundlesNode extends AbstractNode
           return true;
 
         Project next = projects.next();
+        String projectName = ProjectUtils.getInformation(next).getName();
+        Logger.getLogger(BundleSearcher.class.getName()).log(
+            Level.FINE, "scanning {0}.", projectName);
         if(!createProjectKeys(next, toPopulate))
           return true;
 
@@ -161,7 +167,20 @@ class SuiteBundlesNode extends AbstractNode
         Lookup lookup = p.getLookup();
         SubprojectProvider provider = lookup.lookup(SubprojectProvider.class);
         Set<? extends Project> projects = provider.getSubprojects();
-        subProjects = projects.iterator();
+        // Sort Module List by codebase.
+        List<? extends Project> plist = new ArrayList<Project>(projects);
+        Collections.sort(plist, new Comparator<Project>()
+        {
+          @Override
+          public int compare(Project o1, Project o2)
+          {
+            String n1 = ProjectUtils.getInformation(o1).getName();
+            String n2 = ProjectUtils.getInformation(o2).getName();
+            return n1.compareTo(n2);
+          }
+
+        });
+        subProjects = plist.iterator();
       }
       return subProjects;
     }
