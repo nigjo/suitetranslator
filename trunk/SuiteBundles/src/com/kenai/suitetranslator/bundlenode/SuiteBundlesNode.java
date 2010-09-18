@@ -43,8 +43,10 @@ import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
  */
 class SuiteBundlesNode extends AbstractNode
 {
-  public static final String DEFAULT_NETBEANS_FOLDER = "org/openide/loaders/defaultFolder.gif";
-  public static final String PROPERTY_ICON_BADGE = "com/kenai/suitetranslator/bundlenode/BundlesBadge.png";
+  public static final String DEFAULT_NETBEANS_FOLDER =
+      "org/openide/loaders/defaultFolder.gif";
+  public static final String PROPERTY_ICON_BADGE =
+      "com/kenai/suitetranslator/bundlenode/BundlesBadge.png";
   private final Project p;
 
   public SuiteBundlesNode(Project p)
@@ -153,9 +155,12 @@ class SuiteBundlesNode extends AbstractNode
 
         sort(toPopulate);
 
-        // Die Bundles Projektweise anzeigen
-        toPopulate.add(BundleGroup.createDummyGroup());
-        return false;
+        if(projects.hasNext())
+        {
+          // Die Bundles Projektweise anzeigen
+          toPopulate.add(BundleGroup.createDummyGroup());
+          return false;
+        }
       }
       return true;
     }
@@ -178,7 +183,6 @@ class SuiteBundlesNode extends AbstractNode
             String n2 = ProjectUtils.getInformation(o2).getName();
             return n1.compareTo(n2);
           }
-
         });
         subProjects = plist.iterator();
       }
@@ -277,7 +281,6 @@ class SuiteBundlesNode extends AbstractNode
     {
       Collections.sort(toPopulate);
     }
-
   }
   // </editor-fold>
 }
