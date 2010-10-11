@@ -62,9 +62,18 @@ public class BundleGroupNode extends FilterNode
   public String getShortDescription()
   {
     StringBuilder tooltip = new StringBuilder("<html>"); //NOI18N
-    tooltip.append("<span style='color:gray'>"); //NOI18N
 
     BundleFile defaultBundleFile = bundleGroup.getFile(null);
+    if(defaultBundleFile == null)
+    {
+      tooltip.append("<span style='color:red'>"); //NOI18N
+      tooltip.append("no default bundle for <em>");
+      tooltip.append(bundleGroup.getBasename());
+      tooltip.append("</em>");
+      tooltip.append("</span>");
+      return tooltip.toString();
+    }
+    tooltip.append("<span style='color:gray'>"); //NOI18N
     FileObject defaultFile = defaultBundleFile.getFile();
     Project owner = FileOwnerQuery.getOwner(defaultFile);
     if(owner != null)
