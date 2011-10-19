@@ -2,6 +2,7 @@ package com.kenai.suitetranslator.bundlenode.io.omegat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
@@ -15,7 +16,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 
 import com.kenai.suitetranslator.bundlenode.data.BundleFile;
@@ -63,78 +63,25 @@ public class OmegaTExporter implements TranslationExporter
     {
       try
       {
-        String basename = group.getBasename();
-        String resourceFolderName =
-            basename.substring(0, basename.lastIndexOf('.')).replace('.', '-');
-
-        EditableProperties source = new EditableProperties(false);
-
-        BundleFile sourceLocale = group.getFile(null);
-        FileObject sourceFile = sourceLocale.getFile();
-        FileObject sourceFolder = makeFolder(sourceBundles, resourceFolderName);
-        //sourceFolder.refresh(true);
-        FileObject copyTarget = sourceFolder.getFileObject(
-            sourceFile.getName(), sourceFile.getExt());
-        if(copyTarget != null)
-        {
-          Logger.getLogger(OmegaTExporter.class.getName()).log(
-              Level.WARNING, "duplicate Bundle name ''{0}''", basename);
+        EditableProperties source = copyBundle(group, null, sourceBundles);
+        if(source == null)
           continue;
-        }
-        copyTarget = FileUtil.copyFile(
-            sourceFile, sourceFolder, sourceFile.getName());
-        InputStream in = copyTarget.getInputStream();
-        try
-        {
-          source.load(in);
-        }
-        finally
-        {
-          in.close();
-        }
+        EditableProperties target = copyBundle(group, en, targetBundles);
+        if(target == null)
+          continue;
 
-        BundleFile targetLocale = group.getFile(en);
-        if(targetLocale != null)
+        Set<Entry<String, String>> entries = source.entrySet();
+        for(Entry<String, String> entry : entries)
         {
-          EditableProperties target = new EditableProperties(false);
-          FileObject targetFile = targetLocale.getFile();
-          FileObject targetFolder =
-              makeFolder(targetBundles, resourceFolderName);
-          //targetFolder.refresh(true);
-          copyTarget = targetFolder.getFileObject(
-              targetFile.getName(), targetFile.getExt());
-          if(copyTarget != null)
+          String key = entry.getKey();
+          String sourceText = entry.getValue();
+          String targetText = target.getProperty(key);
+          if(targetText != null)
           {
-            Logger.getLogger(OmegaTExporter.class.getName()).log(
-                Level.WARNING, "duplicate target Bundle name ''{0}''", basename);
-            continue;
-          }
-          copyTarget =
-              FileUtil.copyFile(targetFile, targetFolder, targetFile.getName());
-          in = copyTarget.getInputStream();
-          try
-          {
-            target.load(in);
-          }
-          finally
-          {
-            in.close();
-          }
-
-          Set<Entry<String, String>> entries = source.entrySet();
-          for(Entry<String, String> entry : entries)
-          {
-            String key = entry.getKey();
-            String sourceText = entry.getValue();
-            String targetText = target.getProperty(key);
-            if(targetText != null)
-            {
-              if(!translationMemory.containsKey(sourceText))
-                translationMemory.put(sourceText, targetText);
-            }
+            if(!translationMemory.containsKey(sourceText))
+              translationMemory.put(sourceText, targetText);
           }
         }
-        //FileUtil.copyFile(suiteDir, suiteDir, basename);
       }
       catch(IOException e)
       {
@@ -280,6 +227,57 @@ public class OmegaTExporter implements TranslationExporter
     text = text.replaceAll("<", "&lt;");
     text = text.replaceAll(">", "&gt;");
     return text;
+  }
+
+  private EditableProperties copyBundle(BundleGroup group, Locale locale,
+      FileObject targetFolder) throws IOException
+  {
+    String basename = group.getBasename();
+    String resourceFolderName =
+        basename.substring(0, basename.lastIndexOf('.')).replace('.', '-');
+
+    BundleFile sourceFileData = group.getFile(locale);
+
+    if(sourceFileData == null)
+      return null;
+    FileObject sourceFile = sourceFileData.getFile();
+    if(sourceFile == null)
+      return null;
+
+    FileObject resourceFolder = makeFolder(targetFolder, resourceFolderName);
+    //sourceFolder.refresh(true);
+    FileObject copyTarget = resourceFolder.getFileObject(
+        sourceFile.getName(), sourceFile.getExt());
+    if(copyTarget != null)
+    {
+      Logger.getLogger(OmegaTExporter.class.getName()).log(
+          Level.WARNING, "duplicate Bundle name ''{0}''", basename);
+      return null;
+    }
+    EditableProperties targetData = new EditableProperties(false);
+    // Daten einlesen
+    InputStream in = sourceFile.getInputStream();
+    try
+    {
+      targetData.load(in);
+    }
+    finally
+    {
+      in.close();
+    }
+    // und wieder speichern
+    FileObject targetFile = resourceFolder.createData(sourceFile.getNameExt());
+    OutputStream out = targetFile.getOutputStream();
+    try
+    {
+      targetData.store(out);
+    }
+    finally
+    {
+      out.close();
+    }
+
+    return targetData;
   }
 
 }
