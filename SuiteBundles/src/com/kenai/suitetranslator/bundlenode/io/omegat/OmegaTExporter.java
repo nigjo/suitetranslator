@@ -114,8 +114,8 @@ public class OmegaTExporter implements TranslationExporter
       print(out, 0, "<tmx version=\"%s\">", version);
       print(out, 2, "<header");
       print(out, 4, "creationtool=\"%s\"", "SuiteTranslator");
-      print(out, 4, "creationtoolversion=\"%s\"", "0.9");
-      print(out, 4, "segtype=\"%s\"", "sentence");
+      print(out, 4, "creationtoolversion=\"%s\"", "0.9.2");
+      print(out, 4, "segtype=\"%s\"", "paragraph");
       print(out, 4, "o-tmf=\"%s\"", "OmegaT TMX");
       print(out, 4, "adminlang=\"%s\"", "EN-US");
       print(out, 4, "srclang=\"%s\"", "de");
@@ -132,6 +132,9 @@ public class OmegaTExporter implements TranslationExporter
         print(out, 6, "<tuv lang=\"%s\">", "de");
         print(out, 8, "<seg>%s</seg>", toXMLString(key));
         print(out, 6, "</tuv>");
+        // lang="en"
+        // changedate="20111019T124556Z"
+        // changeid="hof"
         print(out, 6, "<tuv lang=\"%s\">", "en");
         print(out, 8, "<seg>%s</seg>", toXMLString(value));
         print(out, 6, "</tuv>");
@@ -181,7 +184,7 @@ public class OmegaTExporter implements TranslationExporter
       print(out, 4, "<dictionary_dir>%s</dictionary_dir>", "l10n/dictionary");
       print(out, 4, "<source_lang>%s</source_lang>", "de");
       print(out, 4, "<target_lang>%s</target_lang>", "en");
-      print(out, 4, "<sentence_seg>true</sentence_seg>");
+      print(out, 4, "<sentence_seg>%s</sentence_seg>", "false");
       print(out, 2, "</project>");
       print(out, 0, "</omegat>");
     }
