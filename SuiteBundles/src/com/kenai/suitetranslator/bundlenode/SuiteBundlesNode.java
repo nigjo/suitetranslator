@@ -1,6 +1,8 @@
 package com.kenai.suitetranslator.bundlenode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 
 import java.awt.Image;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
@@ -33,6 +36,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
+import com.kenai.suitetranslator.bundlenode.data.TranslationBundle;
+import com.kenai.suitetranslator.bundlenode.io.TranslationExporterFactory;
 
 /**
  * Hauptnode fuer den Eintrag "Text Resourcen" eines ModuleSuite Projektes.
@@ -41,7 +46,7 @@ import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
  *
  * @author nigjo
  */
-class SuiteBundlesNode extends AbstractNode
+public class SuiteBundlesNode extends AbstractNode
 {
   public static final String DEFAULT_NETBEANS_FOLDER =
       "org/openide/loaders/defaultFolder.gif";
@@ -55,6 +60,45 @@ class SuiteBundlesNode extends AbstractNode
     this.p = p;
     setName(getClass().getName());
     setIconBaseWithExtension(DEFAULT_NETBEANS_FOLDER);
+  }
+
+  @Override
+  public Action[] getActions(boolean context)
+  {
+    List<Action> actions = new ArrayList<Action>();
+
+    Collection<? extends TranslationExporterFactory> factories =
+        Lookup.getDefault().lookupAll(TranslationExporterFactory.class);
+    for(TranslationExporterFactory factory : factories)
+    {
+      actions.add(new ExportBundlesAction(this, factory));
+    }
+
+
+    if(!actions.isEmpty())
+      actions.add(null);
+    actions.addAll(Arrays.asList(super.getActions(context)));
+    return actions.toArray(new Action[actions.size()]);
+  }
+
+  public List<TranslationBundle> getBundles()
+  {
+    BundleSearcher searcher = new BundleSearcher(p);
+    List<Project> projects = searcher.getSubProjects();
+    List<TranslationBundle> bundles = new ArrayList<TranslationBundle>();
+    for(Project project : projects)
+    {
+      List<BundleGroup> groups = new ArrayList<BundleGroup>();
+      searcher.createProjectKeys(project, groups);
+      if(groups.isEmpty())
+        continue;
+      TranslationBundle bundle = new TranslationBundle();
+      bundle.setProject(project);
+      bundle.setGroups(groups);
+      bundles.add(bundle);
+    }
+
+    return bundles;
   }
 
   // <editor-fold defaultstate="collapsed" desc="Filter: Icon">
@@ -134,7 +178,7 @@ class SuiteBundlesNode extends AbstractNode
     @Override
     protected boolean createKeys(List<BundleGroup> toPopulate)
     {
-      Iterator<? extends Project> projects = getSubProjects();
+      Iterator<? extends Project> projects = getGeneratingIterator();
       if(projects == null)
         return true;
       clearWaitNodes(toPopulate);
@@ -162,31 +206,45 @@ class SuiteBundlesNode extends AbstractNode
           return false;
         }
       }
+
       return true;
     }
 
-    protected Iterator<? extends Project> getSubProjects()
+    /**
+     * Liefert einen Iterator, der den aktuellen Stand des Scanvorgangs
+     * definiert. Es wird pro ChildFactory nur ein Iterator erstellt.
+     *
+     * @return aktueller Iterator.
+     */
+    protected Iterator<? extends Project> getGeneratingIterator()
     {
       if(subProjects == null)
       {
-        Lookup lookup = p.getLookup();
-        SubprojectProvider provider = lookup.lookup(SubprojectProvider.class);
-        Set<? extends Project> projects = provider.getSubprojects();
-        // Sort Module List by codebase.
-        List<? extends Project> plist = new ArrayList<Project>(projects);
-        Collections.sort(plist, new Comparator<Project>()
-        {
-          @Override
-          public int compare(Project o1, Project o2)
-          {
-            String n1 = ProjectUtils.getInformation(o1).getName();
-            String n2 = ProjectUtils.getInformation(o2).getName();
-            return n1.compareTo(n2);
-          }
-        });
-        subProjects = plist.iterator();
+        List<Project> projects = getSubProjects();
+        subProjects = projects.iterator();
       }
       return subProjects;
+    }
+
+    public List<Project> getSubProjects()
+    {
+      Lookup lookup = p.getLookup();
+      SubprojectProvider provider = lookup.lookup(SubprojectProvider.class);
+      Set<? extends Project> projects = provider.getSubprojects();
+      // Sort Module List by codebase.
+      List<? extends Project> plist = new ArrayList<Project>(projects);
+      Collections.sort(plist, new Comparator<Project>()
+      {
+        @Override
+        public int compare(Project o1, Project o2)
+        {
+          String n1 = ProjectUtils.getInformation(o1).getName();
+          String n2 = ProjectUtils.getInformation(o2).getName();
+          return n1.compareTo(n2);
+        }
+
+      });
+      return Collections.unmodifiableList(plist);
     }
 
     private boolean createProjectKeys(
@@ -281,6 +339,7 @@ class SuiteBundlesNode extends AbstractNode
     {
       Collections.sort(toPopulate);
     }
+
   }
   // </editor-fold>
 }
