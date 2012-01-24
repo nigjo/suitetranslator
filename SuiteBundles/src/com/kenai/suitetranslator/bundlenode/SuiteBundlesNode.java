@@ -34,6 +34,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
 import com.kenai.suitetranslator.bundlenode.data.TranslationBundle;
@@ -74,6 +75,11 @@ public class SuiteBundlesNode extends AbstractNode
       actions.add(new ExportBundlesAction(this, factory));
     }
 
+    List<? extends Action> actionsForPath =
+        Utilities.actionsForPath("com-kenai-suitetranslator/Actions");
+    if(!actions.isEmpty())
+      actions.add(null);
+    actions.addAll(actionsForPath);
 
     if(!actions.isEmpty())
       actions.add(null);
