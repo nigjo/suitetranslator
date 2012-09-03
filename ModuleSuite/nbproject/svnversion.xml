@@ -16,8 +16,6 @@
           <available file="${svn.binary}" filepath="${java.library.path}"/>
           <available file="${svn.binary}"/>
         </or>
-        <!-- only if module is already under svn control -->
-        <available file="${basedir}/.svn"/>
         <!-- replacement can be disabled in modules project.properties -->
         <not><istrue value="${svnversion.disable}"/></not>
       </and>
