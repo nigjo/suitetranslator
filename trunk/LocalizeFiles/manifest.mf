@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.kenai.suitetranslator.l10nfiles
+OpenIDE-Module-Localizing-Bundle: com/kenai/suitetranslator/l10nfiles/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
