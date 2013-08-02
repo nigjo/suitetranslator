@@ -10,9 +10,11 @@ import org.netbeans.spi.project.ui.support.NodeList;
  *
  * @author nigjo
  */
+@NodeFactory.Registration(
+    projectType = "org-netbeans-modules-apisupport-project-suite",
+    position = 150)
 public class SuiteBundleNodeFactory implements NodeFactory
 {
-
   @Override
   public NodeList<?> createNodes(Project p)
   {
@@ -20,4 +22,5 @@ public class SuiteBundleNodeFactory implements NodeFactory
     list = NodeFactorySupport.fixedNodeList(new SuiteBundlesNode(p));
     return list;
   }
+
 }
