@@ -20,7 +20,7 @@ class BundleGroupObserver extends FileChangeAdapter
   private FileObject bundleDir;
   private PropertyChangeSupport changeSupport;
 
-  public BundleGroupObserver(BundleGroup group)
+  BundleGroupObserver(BundleGroup group)
   {
     this.group = group;
     changeSupport = new PropertyChangeSupport(group);
@@ -42,7 +42,7 @@ class BundleGroupObserver extends FileChangeAdapter
         localeCount - 1, localeCount);
   }
 
-  public void bundleLocaleRemoved(BundleFile bundleFile)
+  public void bundleLocaleRemoved(BundleGroupEntry bundleFile)
   {
     int localeCount = group.getLocaleCount();
     FileObject file = bundleFile.getFile();
@@ -94,7 +94,7 @@ class BundleGroupObserver extends FileChangeAdapter
     FileObject renamedFile = fe.getFile();
     if(renamedFile.isFolder())
       return;
-    BundleFile bundleFile;
+    BundleGroupEntry bundleFile;
     String oldFileName = fe.getName();
     String[] parts = oldFileName.split("_");
     switch(parts.length)

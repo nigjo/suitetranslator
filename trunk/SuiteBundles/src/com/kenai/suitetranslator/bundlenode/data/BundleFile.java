@@ -13,11 +13,13 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 
 /**
- * Eine einzelne Propierties Datei als Teil eines Bundle;
+ * Eine einzelne Propierties Datei als Teil eines Bundle.
+ *
+ * <p><strong>no longer public since 0.9.3!</strong>
  *
  * @author hof
  */
-public class BundleFile
+public class BundleFile implements BundleGroupEntry
 {
   private final FileObject file;
   private final BundleGroup parent;
@@ -30,10 +32,10 @@ public class BundleFile
     this.parent = bundle;
     this.locale = locale;
 
-    BundleFile baseFile = bundle.getFile(null);
+    BundleGroupEntry baseFile = bundle.getFile(null);
     if(baseFile == null)
       throw new IllegalArgumentException("unable to create new bundles");
-    FileObject bundleDir = baseFile.file.getParent();
+    FileObject bundleDir = baseFile.getFile().getParent();
     String bundleFileName = bundle.getBasename();
     bundleFileName =
         bundleFileName.substring(bundleFileName.lastIndexOf('.') + 1);
@@ -79,11 +81,13 @@ public class BundleFile
       locale = null;
   }
 
+  @Override
   public Locale getLocale()
   {
     return locale;
   }
 
+  @Override
   public BundleGroup getParent()
   {
     return parent;
@@ -142,6 +146,7 @@ public class BundleFile
     getData().setProperty(key, value);
   }
 
+  @Override
   public FileObject getFile()
   {
     return file;

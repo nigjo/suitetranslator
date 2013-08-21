@@ -1,14 +1,16 @@
 package com.kenai.suitetranslator.bundlenode.data;
 
-import com.kenai.suitetranslator.bundlenode.BundleGroupNode;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+
+import com.kenai.suitetranslator.bundlenode.BundleGroupNode;
 
 /**
  * Daten eines Bundles.
@@ -17,14 +19,14 @@ import org.openide.nodes.Node;
  *
  * @author nigjo
  */
-public class BundleGroup implements Iterable<BundleFile>,
-    Comparable<BundleGroup>
+public class BundleGroup implements
+    Iterable<BundleGroupEntry>, Comparable<BundleGroup>
 {
   public static final String PROP_BUNDLE_DIR = "BundleGroup.bundleDir";
   public static final String PROP_LOCALE_COUNT = "BundleGroup.localeCount";
   public static final String PROP_LAST_CHANGED = "BundleGroup.lastChanged";
   protected BundleGroupNode node;
-  List<BundleFile> files;
+  List<BundleGroupEntry> files;
   private final String basename;
   private BundleGroupObserver changeObserver;
   private long lastChanged;
@@ -43,7 +45,7 @@ public class BundleGroup implements Iterable<BundleFile>,
   public void add(FileObject subfile)
   {
     if(files == null)
-      files = new ArrayList<BundleFile>();
+      files = new ArrayList<BundleGroupEntry>();
     BundleFile bundleFile = new BundleFile(this, subfile);
     files.add(bundleFile);
     changeObserver.bundleLocaleAdded(bundleFile);
@@ -56,7 +58,7 @@ public class BundleGroup implements Iterable<BundleFile>,
     remove(getFile(deletedFile));
   }
 
-  void remove(BundleFile bundleFile)
+  void remove(BundleGroupEntry bundleFile)
   {
     if(bundleFile == null)
       return;
@@ -66,7 +68,7 @@ public class BundleGroup implements Iterable<BundleFile>,
   }
 
   @Override
-  public Iterator<BundleFile> iterator()
+  public Iterator<BundleGroupEntry> iterator()
   {
     return files.iterator();
   }
@@ -85,7 +87,7 @@ public class BundleGroup implements Iterable<BundleFile>,
     {
       b.append(" (");
       boolean first = true;
-      for(BundleFile f : this)
+      for(BundleGroupEntry f : this)
       {
         if(first)
           first = false;
@@ -102,9 +104,9 @@ public class BundleGroup implements Iterable<BundleFile>,
     return b.toString();
   }
 
-  private BundleFile getFile(FileObject fo)
+  private BundleGroupEntry getFile(FileObject fo)
   {
-    for(BundleFile file : this)
+    for(BundleGroupEntry file : this)
     {
       if(file.getFile().equals(fo))
         return file;
@@ -112,9 +114,9 @@ public class BundleGroup implements Iterable<BundleFile>,
     return null;
   }
 
-  public BundleFile getFile(Locale locale)
+  public BundleGroupEntry getFile(Locale locale)
   {
-    for(BundleFile file : this)
+    for(BundleGroupEntry file : this)
     {
       if(locale == null)
       {
@@ -133,11 +135,15 @@ public class BundleGroup implements Iterable<BundleFile>,
   public BundleFile createFile(Locale locale) throws IOException
   {
     BundleFile bundleFile;
-    bundleFile = getFile(locale);
-    if(bundleFile == null)
+    BundleGroupEntry bundleEntry = getFile(locale);
+    if(bundleEntry instanceof BundleFile)
+    {
+      bundleFile = (BundleFile)bundleEntry;
+    }
+    else
     {
       if(files == null)
-        files = new ArrayList<BundleFile>();
+        files = new ArrayList<BundleGroupEntry>();
       bundleFile = new BundleFile(this, locale);
       files.add(bundleFile);
     }

@@ -21,11 +21,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 
-import com.kenai.suitetranslator.bundlenode.data.BundleFile;
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.kenai.suitetranslator.bundlenode.data.BundleGroupEntry;
 
 /**
  * A Node for a BundleGroup.
@@ -63,7 +64,7 @@ public class BundleGroupNode extends FilterNode
   {
     StringBuilder tooltip = new StringBuilder("<html>"); //NOI18N
 
-    BundleFile defaultBundleFile = bundleGroup.getFile(null);
+    BundleGroupEntry defaultBundleFile = bundleGroup.getFile(null);
     if(defaultBundleFile == null)
     {
       tooltip.append("<span style='color:red'>"); //NOI18N
@@ -89,7 +90,7 @@ public class BundleGroupNode extends FilterNode
     if(bundleGroup.getLocaleCount() > 1)
     {
       StringBuilder locales = null;
-      for(BundleFile file : bundleGroup)
+      for(BundleGroupEntry file : bundleGroup)
       {
         if(locales == null)
         {
@@ -161,7 +162,7 @@ public class BundleGroupNode extends FilterNode
 
   private static DataObject getPropertyData(BundleGroup key)
   {
-    BundleFile defaultBundleFile = key.getFile(null);
+    BundleGroupEntry defaultBundleFile = key.getFile(null);
     if(defaultBundleFile == null)
       return null;
     FileObject file = defaultBundleFile.getFile();

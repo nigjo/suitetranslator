@@ -11,8 +11,8 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
-import com.kenai.suitetranslator.bundlenode.data.BundleFile;
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
+import com.kenai.suitetranslator.bundlenode.data.BundleGroupEntry;
 
 /**
  * FilterNode to add a info badge to BundleGroupNodes.
@@ -75,7 +75,7 @@ class BadgedGroupNode extends FilterNode
     else
     {
       //TODO: add Property entry scans.
-      BundleFile defaultFile = group.getFile(null);
+      BundleGroupEntry defaultFile = group.getFile(null);
       if(defaultFile == null)
       {
         setBadge(RED);
@@ -84,7 +84,7 @@ class BadgedGroupNode extends FilterNode
       Set<String> defaultKeys = defaultFile.getKeys();
       int keyCount = defaultKeys.size();
 
-      for(BundleFile f : group)
+      for(BundleGroupEntry f : group)
       {
         if(f == defaultFile)
           continue;
