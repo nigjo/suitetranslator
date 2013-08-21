@@ -18,8 +18,8 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.util.EditableProperties;
 
-import com.kenai.suitetranslator.bundlenode.data.BundleFile;
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
+import com.kenai.suitetranslator.bundlenode.data.BundleGroupEntry;
 import com.kenai.suitetranslator.bundlenode.data.TranslationBundle;
 import com.kenai.suitetranslator.bundlenode.io.TranslationExporter;
 
@@ -239,7 +239,7 @@ public class OmegaTExporter implements TranslationExporter
     String resourceFolderName =
         basename.substring(0, basename.lastIndexOf('.')).replace('.', '-');
 
-    BundleFile sourceFileData = group.getFile(locale);
+    BundleGroupEntry sourceFileData = group.getFile(locale);
 
     if(sourceFileData == null)
       return null;
