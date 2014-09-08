@@ -52,7 +52,7 @@ public class OmegaTExporter implements TranslationExporter
           Level.WARNING, ex.toString(), ex);
     }
 
-    translationMemory = new LinkedHashMap<String, String>();
+    translationMemory = new LinkedHashMap<>();
   }
 
   @Override
@@ -65,10 +65,14 @@ public class OmegaTExporter implements TranslationExporter
       {
         EditableProperties source = copyBundle(group, null, sourceBundles);
         if(source == null)
+        {
           continue;
+        }
         EditableProperties target = copyBundle(group, en, targetBundles);
         if(target == null)
+        {
           continue;
+        }
 
         Set<Entry<String, String>> entries = source.entrySet();
         for(Entry<String, String> entry : entries)
@@ -79,7 +83,9 @@ public class OmegaTExporter implements TranslationExporter
           if(targetText != null)
           {
             if(!translationMemory.containsKey(sourceText))
+            {
               translationMemory.put(sourceText, targetText);
+            }
           }
         }
       }
@@ -101,13 +107,14 @@ public class OmegaTExporter implements TranslationExporter
 
     FileObject projectFile = projectFolder.getFileObject("project_save", "tmx");
     if(projectFile == null)
+    {
       projectFile = projectFolder.createData("project_save", "tmx");
+    }
 
     OutputStreamWriter sow = new OutputStreamWriter(
         projectFile.getOutputStream(), "UTF-8");
     //TODO: richtige Datei ermitteln!
-    PrintWriter out = new PrintWriter(sow);
-    try
+    try(PrintWriter out = new PrintWriter(sow))
     {
       print(out, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
       print(out, 0, "<!DOCTYPE tmx SYSTEM \"tmx%s.dtd\">", dtdVersion);
@@ -145,16 +152,14 @@ public class OmegaTExporter implements TranslationExporter
       print(out, 0, "</tmx>");
       //zipOut.closeEntry();
     }
-    finally
-    {
-      out.close();
-    }
   }
 
   private void print(PrintWriter out, int indent, String format, Object... args)
   {
     if(indent > 0)
+    {
       out.print(String.format("%" + indent + "s", ""));
+    }
     out.println(String.format(format, args));
   }
 
@@ -162,17 +167,22 @@ public class OmegaTExporter implements TranslationExporter
   {
     FileObject projectFolder = suiteDir.getFileObject("omegat");
     if(projectFolder == null)
+    {
       projectFolder = suiteDir.createFolder("omegat");
+    }
     if(projectFolder != null && !projectFolder.isFolder())
+    {
       throw new IOException("no omegat project folder");
+    }
 
     FileObject projectFile = suiteDir.getFileObject("omegat", "project");
     if(projectFile == null)
+    {
       projectFile = suiteDir.createData("omegat", "project");
+    }
 
     //ZipEntry entry = new ZipEntry("omegat.project");
-    PrintWriter out = new PrintWriter(projectFile.getOutputStream());
-    try
+    try(PrintWriter out = new PrintWriter(projectFile.getOutputStream()))
     {
       print(out, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
       print(out, 0, "<omegat>");
@@ -187,10 +197,6 @@ public class OmegaTExporter implements TranslationExporter
       print(out, 4, "<sentence_seg>%s</sentence_seg>", "false");
       print(out, 2, "</project>");
       print(out, 0, "</omegat>");
-    }
-    finally
-    {
-      out.close();
     }
 
     FileObject l10n = makeFolder(suiteDir, "l10n");
@@ -212,14 +218,18 @@ public class OmegaTExporter implements TranslationExporter
   {
     FileObject projectFolder = parent.getFileObject(folder);
     if(projectFolder == null)
+    {
       projectFolder = parent.createFolder(folder);
+    }
     else if(clear && projectFolder.isFolder())
     {
       projectFolder.delete();
       projectFolder = parent.createFolder(folder);
     }
     if(projectFolder != null && !projectFolder.isFolder())
+    {
       throw new IOException("not a folder");
+    }
     return projectFolder;
   }
 
@@ -242,10 +252,14 @@ public class OmegaTExporter implements TranslationExporter
     BundleGroupEntry sourceFileData = group.getFile(locale);
 
     if(sourceFileData == null)
+    {
       return null;
+    }
     FileObject sourceFile = sourceFileData.getFile();
     if(sourceFile == null)
+    {
       return null;
+    }
 
     FileObject resourceFolder = makeFolder(targetFolder, resourceFolderName);
     //sourceFolder.refresh(true);
@@ -259,25 +273,15 @@ public class OmegaTExporter implements TranslationExporter
     }
     EditableProperties targetData = new EditableProperties(false);
     // Daten einlesen
-    InputStream in = sourceFile.getInputStream();
-    try
+    try(InputStream in = sourceFile.getInputStream())
     {
       targetData.load(in);
     }
-    finally
-    {
-      in.close();
-    }
     // und wieder speichern
     FileObject targetFile = resourceFolder.createData(sourceFile.getNameExt());
-    OutputStream out = targetFile.getOutputStream();
-    try
+    try(OutputStream out = targetFile.getOutputStream())
     {
       targetData.store(out);
-    }
-    finally
-    {
-      out.close();
     }
 
     return targetData;

@@ -28,7 +28,7 @@ public class BundleGroup implements
   protected BundleGroupNode node;
   List<BundleGroupEntry> files;
   private final String basename;
-  private BundleGroupObserver changeObserver;
+  private final BundleGroupObserver changeObserver;
   private long lastChanged;
 
   public BundleGroup(String basename)
@@ -45,7 +45,9 @@ public class BundleGroup implements
   public void add(FileObject subfile)
   {
     if(files == null)
-      files = new ArrayList<BundleGroupEntry>();
+    {
+      files = new ArrayList<>();
+    }
     BundleFile bundleFile = new BundleFile(this, subfile);
     files.add(bundleFile);
     changeObserver.bundleLocaleAdded(bundleFile);
@@ -54,14 +56,18 @@ public class BundleGroup implements
   public void remove(FileObject deletedFile)
   {
     if(files == null)
+    {
       return;
+    }
     remove(getFile(deletedFile));
   }
 
   void remove(BundleGroupEntry bundleFile)
   {
     if(bundleFile == null)
+    {
       return;
+    }
     int index = files.indexOf(bundleFile);
     files.remove(index);
     changeObserver.bundleLocaleRemoved(bundleFile);
@@ -90,14 +96,22 @@ public class BundleGroup implements
       for(BundleGroupEntry f : this)
       {
         if(first)
+        {
           first = false;
+        }
         else
+        {
           b.append(", ");
+        }
         Locale l = f.getLocale();
         if(l == null)
+        {
           b.append("<default>");
+        }
         else
+        {
           b.append(f.getLocale().toString());
+        }
       }
       b.append(")");
     }
@@ -109,7 +123,9 @@ public class BundleGroup implements
     for(BundleGroupEntry file : this)
     {
       if(file.getFile().equals(fo))
+      {
         return file;
+      }
     }
     return null;
   }
@@ -121,12 +137,16 @@ public class BundleGroup implements
       if(locale == null)
       {
         if(file.getLocale() == null)
+        {
           return file;
+        }
       }
       else
       {
         if(locale.equals(file.getLocale()))
+        {
           return file;
+        }
       }
     }
     return null;
@@ -143,7 +163,9 @@ public class BundleGroup implements
     else
     {
       if(files == null)
-        files = new ArrayList<BundleGroupEntry>();
+      {
+        files = new ArrayList<>();
+      }
       bundleFile = new BundleFile(this, locale);
       files.add(bundleFile);
     }
@@ -153,7 +175,9 @@ public class BundleGroup implements
   public int getLocaleCount()
   {
     if(files == null)
+    {
       return 0;
+    }
     return files.size();
   }
 
@@ -172,7 +196,9 @@ public class BundleGroup implements
   {
     long lastChange = this.lastChanged;
     if(time < lastChange)
+    {
       return;
+    }
     this.lastChanged = time;
     changeObserver.bundleChanged(lastChange, time);
   }
@@ -180,7 +206,9 @@ public class BundleGroup implements
   public Node getNodeDelegate()
   {
     if(node == null)
+    {
       node = new BundleGroupNode(this);
+    }
     return node;
   }
 
@@ -223,4 +251,5 @@ public class BundleGroup implements
     changeObserver.addPropertyChangeListener(propertyName, listener);
   }
   // </editor-fold>
+
 }

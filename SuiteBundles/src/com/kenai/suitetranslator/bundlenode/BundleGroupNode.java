@@ -1,11 +1,19 @@
 package com.kenai.suitetranslator.bundlenode;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.Action;
+
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
@@ -17,15 +25,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-
 import com.kenai.suitetranslator.bundlenode.data.BundleGroup;
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.kenai.suitetranslator.bundlenode.data.BundleGroupEntry;
 
 /**
@@ -107,10 +107,12 @@ public class BundleGroupNode extends FilterNode
               BundleGroupNode.class, "BundleGroupNode.default_locale"));
         }
         else
+        {
           locales.append(locale.getDisplayName());
+        }
       }
       tooltip.append("<br>");
-      tooltip.append(makePair("locales", locales.toString()));
+      tooltip.append(makePair("locales", Objects.toString(locales, "?")));
     }
     tooltip.append("</span>");
     return tooltip.toString();
@@ -140,7 +142,9 @@ public class BundleGroupNode extends FilterNode
     htmlText = htmlText.replace("\'", "&#39;");
 
     if(blackText)
+    {
       htmlText = "<span style='color:black'>" + htmlText + "</span>";
+    }
 
     return htmlText;
   }// </editor-fold>
@@ -149,7 +153,9 @@ public class BundleGroupNode extends FilterNode
   public String getDisplayName()
   {
     if(bundleGroup == null)
+    {
       return super.getDisplayName();
+    }
     String basename = bundleGroup.getBasename();
     return basename;
   }
@@ -164,7 +170,9 @@ public class BundleGroupNode extends FilterNode
   {
     BundleGroupEntry defaultBundleFile = key.getFile(null);
     if(defaultBundleFile == null)
+    {
       return null;
+    }
     FileObject file = defaultBundleFile.getFile();
     try
     {
@@ -197,7 +205,7 @@ public class BundleGroupNode extends FilterNode
 
   private void initChangeEvents(BundleGroup group)
   {
-    groupListener = new HashMap<String, PropertyChangeListener>();
+    groupListener = new HashMap<>();
 
     groupListener.put(BundleGroup.PROP_LOCALE_COUNT,
         new PropertyChangeListener()

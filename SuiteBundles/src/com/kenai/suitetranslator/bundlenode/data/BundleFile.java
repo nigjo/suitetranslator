@@ -15,7 +15,8 @@ import org.openide.filesystems.FileObject;
 /**
  * Eine einzelne Propierties Datei als Teil eines Bundle.
  *
- * <p><strong>no longer public since 0.9.3!</strong>
+ * <p>
+ * <strong>no longer public since 0.9.3!</strong>
  *
  * @author hof
  */
@@ -34,7 +35,9 @@ public class BundleFile implements BundleGroupEntry
 
     BundleGroupEntry baseFile = bundle.getFile(null);
     if(baseFile == null)
+    {
       throw new IllegalArgumentException("unable to create new bundles");
+    }
     FileObject bundleDir = baseFile.getFile().getParent();
     String bundleFileName = bundle.getBasename();
     bundleFileName =
@@ -42,7 +45,9 @@ public class BundleFile implements BundleGroupEntry
     bundleFileName += '_' + locale.toString();
     FileObject fo = bundleDir.getFileObject(bundleFileName, "properties");
     if(fo == null)
+    {
       fo = bundleDir.createData(bundleFileName, "properties");
+    }
     this.file = fo;
     this.lastModified = this.file.lastModified();
   }
@@ -78,7 +83,9 @@ public class BundleFile implements BundleGroupEntry
       }
     }
     else
+    {
       locale = null;
+    }
   }
 
   @Override
@@ -93,6 +100,7 @@ public class BundleFile implements BundleGroupEntry
     return parent;
   }
 
+  @Override
   public Set<String> getKeys()
   {
     return getData().stringPropertyNames();
@@ -100,12 +108,11 @@ public class BundleFile implements BundleGroupEntry
 
   private synchronized Properties getData()
   {
-    Properties data = null;
     Date now = file.lastModified();
     if(dataRef == null || dataRef.get() == null || now.after(lastModified))
     {
-      data = updateProperties();
-      dataRef = new SoftReference<Properties>(data);
+      Properties data = updateProperties();
+      dataRef = new SoftReference<>(data);
       lastModified = now;
     }
     return dataRef.get();
@@ -116,16 +123,11 @@ public class BundleFile implements BundleGroupEntry
     try
     {
       file.refresh();
-      InputStream in = file.getInputStream();
-      try
+      try(InputStream in = file.getInputStream())
       {
         Properties data = new Properties();
         data.load(in);
         return data;
-      }
-      finally
-      {
-        in.close();
       }
     }
     catch(IOException e)
