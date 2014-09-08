@@ -1,16 +1,6 @@
 package com.kenai.suitetranslator.bundlenode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +56,7 @@ public class SuiteBundlesNode extends AbstractNode
   @Override
   public Action[] getActions(boolean context)
   {
-    List<Action> actions = new ArrayList<Action>();
+    List<Action> actions = new ArrayList<>();
 
     Collection<? extends TranslationExporterFactory> factories =
         Lookup.getDefault().lookupAll(TranslationExporterFactory.class);
@@ -78,11 +68,15 @@ public class SuiteBundlesNode extends AbstractNode
     List<? extends Action> actionsForPath =
         Utilities.actionsForPath("com-kenai-suitetranslator/Actions");
     if(!actions.isEmpty())
+    {
       actions.add(null);
+    }
     actions.addAll(actionsForPath);
 
     if(!actions.isEmpty())
+    {
       actions.add(null);
+    }
     actions.addAll(Arrays.asList(super.getActions(context)));
     return actions.toArray(new Action[actions.size()]);
   }
@@ -91,13 +85,15 @@ public class SuiteBundlesNode extends AbstractNode
   {
     BundleSearcher searcher = new BundleSearcher(p);
     List<Project> projects = searcher.getSubProjects();
-    List<TranslationBundle> bundles = new ArrayList<TranslationBundle>();
+    List<TranslationBundle> bundles = new ArrayList<>();
     for(Project project : projects)
     {
-      List<BundleGroup> groups = new ArrayList<BundleGroup>();
+      List<BundleGroup> groups = new ArrayList<>();
       searcher.createProjectKeys(project, groups);
       if(groups.isEmpty())
+      {
         continue;
+      }
       TranslationBundle bundle = new TranslationBundle();
       bundle.setProject(project);
       bundle.setGroups(groups);
@@ -115,13 +111,21 @@ public class SuiteBundlesNode extends AbstractNode
 
     Object nbFolder = UIManager.get("Nb.Explorer.Folder.icon");
     if(nbFolder == null)
+    {
       nbFolder = super.getIcon(type);
+    }
     if(nbFolder instanceof Image)
+    {
       icon = (Image)nbFolder;
+    }
     else if(nbFolder instanceof Icon)
+    {
       icon = ImageUtilities.icon2Image((Icon)nbFolder);
+    }
     else
+    {
       icon = super.getIcon(type);
+    }
     Image badge = ImageUtilities.loadImage(PROPERTY_ICON_BADGE);
     return ImageUtilities.mergeImages(icon, badge, 9, 8);
   }
@@ -133,13 +137,21 @@ public class SuiteBundlesNode extends AbstractNode
 
     Object nbFolder = UIManager.get("Nb.Explorer.Folder.openedIcon");
     if(nbFolder == null)
+    {
       nbFolder = super.getOpenedIcon(type);
+    }
     if(nbFolder instanceof Image)
+    {
       icon = (Image)nbFolder;
+    }
     else if(nbFolder instanceof Icon)
+    {
       icon = ImageUtilities.icon2Image((Icon)nbFolder);
+    }
     else
+    {
       icon = super.getOpenedIcon(type);
+    }
     Image badge = ImageUtilities.loadImage(PROPERTY_ICON_BADGE);
     return ImageUtilities.mergeImages(icon, badge, 9, 8);
   }
@@ -175,7 +187,9 @@ public class SuiteBundlesNode extends AbstractNode
     protected Node createNodeForKey(BundleGroup key)
     {
       if(key.isDummyGroup())
+      {
         return createWaitNode();
+      }
       Node bundleGroupNode = key.getNodeDelegate();
       bundleGroupNode = new BadgedGroupNode(bundleGroupNode);
       return bundleGroupNode;
@@ -186,22 +200,30 @@ public class SuiteBundlesNode extends AbstractNode
     {
       Iterator<? extends Project> projects = getGeneratingIterator();
       if(projects == null)
+      {
         return true;
+      }
       clearWaitNodes(toPopulate);
       while(projects.hasNext())
       {
         if(Thread.interrupted())
+        {
           return true;
+        }
 
         Project next = projects.next();
         String projectName = ProjectUtils.getInformation(next).getName();
         Logger.getLogger(BundleSearcher.class.getName()).log(
             Level.FINE, "scanning {0}.", projectName);
         if(!createProjectKeys(next, toPopulate))
+        {
           return true;
+        }
 
         if(Thread.interrupted())
+        {
           return true;
+        }
 
         sort(toPopulate);
 
@@ -238,7 +260,7 @@ public class SuiteBundlesNode extends AbstractNode
       SubprojectProvider provider = lookup.lookup(SubprojectProvider.class);
       Set<? extends Project> projects = provider.getSubprojects();
       // Sort Module List by codebase.
-      List<? extends Project> plist = new ArrayList<Project>(projects);
+      List<? extends Project> plist = new ArrayList<>(projects);
       Collections.sort(plist, new Comparator<Project>()
       {
         @Override
@@ -259,7 +281,9 @@ public class SuiteBundlesNode extends AbstractNode
       Sources sources = ProjectUtils.getSources(moduleProject);
       SourceGroup[] genericSources = sources.getSourceGroups("java");
       if(genericSources == null || genericSources.length == 0)
+      {
         return true;
+      }
       for(SourceGroup group : genericSources)
       {
         FileObject sourceRoot = group.getRootFolder();
@@ -267,11 +291,15 @@ public class SuiteBundlesNode extends AbstractNode
         for(FileObject child : children)
         {
           if(Thread.interrupted())
+          {
             return false;
+          }
           if(child.isFolder())
           {
             if(!scanForBundles(child, null, toPopulate))
+            {
               return false;
+            }
           }
         }
       }
@@ -281,31 +309,41 @@ public class SuiteBundlesNode extends AbstractNode
     private boolean scanForBundles(FileObject folder, String base,
         List<BundleGroup> toPopulate)
     {
-      Map<String, BundleGroup> groups = new HashMap<String, BundleGroup>();
-      List<FileObject> subdirs = new ArrayList<FileObject>();
+      Map<String, BundleGroup> groups = new HashMap<>();
+      List<FileObject> subdirs = new ArrayList<>();
       if(base == null)
+      {
         base = folder.getNameExt();
+      }
       else
+      {
         base += '.' + folder.getNameExt();
+      }
 
       // search available Bundles
       FileObject[] children = folder.getChildren();
       for(FileObject child : children)
       {
         if(Thread.interrupted())
+        {
           return false;
+        }
         if(child.isFolder())
         {
           subdirs.add(child);
           continue;
         }
         if(!"properties".equals(child.getExt()))
+        {
           continue;
+        }
         String name = child.getName();
         String filebase = name;
         //filebase = name.substring(name.lastIndexOf('.') + 1);
         if(filebase.indexOf('_') > 0)
+        {
           filebase = filebase.substring(0, filebase.indexOf('_'));
+        }
         String bundleBase = base + '.' + filebase;
         BundleGroup group = groups.get(bundleBase);
         if(group == null)
@@ -318,13 +356,17 @@ public class SuiteBundlesNode extends AbstractNode
 
       // add to pupulate list
       for(BundleGroup bundleGroup : groups.values())
+      {
         toPopulate.add(bundleGroup);
+      }
 
       // Unterverzeichnisse durchsuchen
       for(FileObject dir : subdirs)
       {
         if(!scanForBundles(dir, base, toPopulate))
+        {
           return false;
+        }
       }
 
       return true;
@@ -337,7 +379,9 @@ public class SuiteBundlesNode extends AbstractNode
       {
         BundleGroup group = it.next();
         if(group.isDummyGroup())
+        {
           it.remove();
+        }
       }
     }
 
